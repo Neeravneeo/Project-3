@@ -1,0 +1,39 @@
+# .env contains real secrets — NEVER commit
+.env
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+.eggs/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+*.sqlite3
+
+# Frontend
+node_modules/
+.next/
+out/
+frontend/.env
+frontend/.env.local
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
