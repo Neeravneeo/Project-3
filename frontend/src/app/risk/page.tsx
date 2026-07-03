@@ -1,0 +1,1 @@
+export default function RiskPage() { return <div>Risk Page</div>; }

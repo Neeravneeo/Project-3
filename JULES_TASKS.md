@@ -45,68 +45,68 @@
 > **Goal:** Full Docker stack running, database connected, API skeleton live
 
 ### Issue 1 — `[1A]` Create TimescaleDB SQL init migration
-- [ ] File: `backend/migrations/init.sql`
-- [ ] Enable `timescaledb` and `uuid-ossp` extensions
-- [ ] Create all 12 tables from `docs/5_BACKEND_SCHEMA.md`:
+- [x] File: `backend/migrations/init.sql`
+- [x] Enable `timescaledb` and `uuid-ossp` extensions
+- [x] Create all 12 tables from `docs/5_BACKEND_SCHEMA.md`:
   - `users`, `user_settings`, `portfolios`, `positions`, `orders`
   - `strategies`, `signals`, `market_bars` (hypertable)
   - `risk_snapshots`, `hedge_events`, `news_items`, `audit_log`
-- [ ] All indexes from schema doc
-- [ ] Continuous aggregate for `market_bars_daily`
+- [x] All indexes from schema doc
+- [x] Continuous aggregate for `market_bars_daily`
 - **Reference:** `docs/5_BACKEND_SCHEMA.md`
 
 ---
 
 ### Issue 2 — `[1A]` Setup Alembic migrations
-- [ ] Initialize Alembic in `backend/migrations/`
-- [ ] Configure `alembic.ini` to use `DATABASE_URL` from environment
-- [ ] Create `env.py` with SQLAlchemy async support
-- [ ] Create initial migration matching `docs/5_BACKEND_SCHEMA.md`
-- [ ] Add migration run command to `Dockerfile`
+- [x] Initialize Alembic in `backend/migrations/`
+- [x] Configure `alembic.ini` to use `DATABASE_URL` from environment
+- [x] Create `env.py` with SQLAlchemy async support
+- [x] Create initial migration matching `docs/5_BACKEND_SCHEMA.md`
+- [x] Add migration run command to `Dockerfile`
 - **Reference:** `docs/2_TRD.md` Section 3
 
 ---
 
 ### Issue 3 — `[1A]` Create SQLAlchemy ORM models
-- [ ] Create `backend/app/models/` directory
-- [ ] `user.py` — `User`, `UserSettings` models
-- [ ] `portfolio.py` — `Portfolio` model
-- [ ] `position.py` — `Position` model
-- [ ] `order.py` — `Order` model
-- [ ] `strategy.py` — `Strategy` model
-- [ ] `signal.py` — `Signal` model
-- [ ] `risk.py` — `RiskSnapshot` model
-- [ ] `hedge.py` — `HedgeEvent` model
-- [ ] `news.py` — `NewsItem` model
-- [ ] `audit.py` — `AuditLog` model
+- [x] Create `backend/app/models/` directory
+- [x] `user.py` — `User`, `UserSettings` models
+- [x] `portfolio.py` — `Portfolio` model
+- [x] `position.py` — `Position` model
+- [x] `order.py` — `Order` model
+- [x] `strategy.py` — `Strategy` model
+- [x] `signal.py` — `Signal` model
+- [x] `risk.py` — `RiskSnapshot` model
+- [x] `hedge.py` — `HedgeEvent` model
+- [x] `news.py` — `NewsItem` model
+- [x] `audit.py` — `AuditLog` model
 - SQLAlchemy 2.0 declarative style, async, all UUIDs with `uuid_generate_v4()` server default, all timestamps `TIMESTAMPTZ`
 - **Reference:** `docs/5_BACKEND_SCHEMA.md`
 
 ---
 
 ### Issue 4 — `[1A]` Create Pydantic v2 request/response schemas
-- [ ] Create `backend/app/schemas/` directory
-- [ ] `user.py` — `UserCreate`, `UserResponse`, `UserUpdate`
-- [ ] `portfolio.py` — `PortfolioResponse`, `PortfolioSummary`
-- [ ] `position.py` — `PositionResponse`
-- [ ] `order.py` — `OrderCreate`, `OrderResponse`
-- [ ] `strategy.py` — `StrategyResponse`, `StrategyUpdate` (with JSONB parameters)
-- [ ] `signal.py` — `SignalResponse`
-- [ ] `risk.py` — `RiskMetricsResponse`
-- [ ] `hedge.py` — `HedgeStatusResponse`, `HedgeEventResponse`
-- [ ] `auth.py` — `LoginRequest`, `TokenResponse`
-- [ ] `common.py` — `PaginatedResponse`, `ErrorResponse`
+- [x] Create `backend/app/schemas/` directory
+- [x] `user.py` — `UserCreate`, `UserResponse`, `UserUpdate`
+- [x] `portfolio.py` — `PortfolioResponse`, `PortfolioSummary`
+- [x] `position.py` — `PositionResponse`
+- [x] `order.py` — `OrderCreate`, `OrderResponse`
+- [x] `strategy.py` — `StrategyResponse`, `StrategyUpdate` (with JSONB parameters)
+- [x] `signal.py` — `SignalResponse`
+- [x] `risk.py` — `RiskMetricsResponse`
+- [x] `hedge.py` — `HedgeStatusResponse`, `HedgeEventResponse`
+- [x] `auth.py` — `LoginRequest`, `TokenResponse`
+- [x] `common.py` — `PaginatedResponse`, `ErrorResponse`
 - Use `model_config = ConfigDict(from_attributes=True)` (Pydantic v2)
 - **Reference:** `docs/5_BACKEND_SCHEMA.md` + `docs/3_APP_FLOW.md`
 
 ---
 
 ### Issue 5 — `[1A]` Create Prometheus monitoring config
-- [ ] Create `monitoring/prometheus.yml`
+- [x] Create `monitoring/prometheus.yml`
   - Scrape backend API `/metrics` endpoint
   - Scrape interval: 15s
   - Alerting rules for: API down, high latency
-- [ ] Create `monitoring/grafana/dashboards/trading.json`
+- [x] Create `monitoring/grafana/dashboards/trading.json`
   - TimescaleDB data source import
   - Panels: API latency, active connections, signal generation rate, order count
 - **Reference:** `docs/2_TRD.md` Section 8
@@ -114,9 +114,9 @@
 ---
 
 ### Issue 6 — `[1A]` Scaffold Next.js frontend
-- [ ] Initialize Next.js 14 App Router in `frontend/` directory (TypeScript, Tailwind, shadcn/ui)
-- [ ] Install: `zustand`, `@tanstack/react-query`, `recharts`, `lightweight-charts`, `react-countup`, `clsx`
-- [ ] Create folder structure:
+- [x] Initialize Next.js 14 App Router in `frontend/` directory (TypeScript, Tailwind, shadcn/ui)
+- [x] Install: `zustand`, `@tanstack/react-query`, `recharts`, `lightweight-charts`, `react-countup`, `clsx`
+- [x] Create folder structure:
   ```
   frontend/src/
     app/
@@ -147,16 +147,16 @@
       useWebSocket.ts
       usePortfolio.ts
   ```
-- [ ] Create `globals.css` with all CSS variables from design system
+- [x] Create `globals.css` with all CSS variables from design system
 - Apply full design system from `docs/4_UI_UX_BRIEF.md` (dark theme, colors, typography)
 - **Reference:** `docs/4_UI_UX_BRIEF.md` + `docs/3_APP_FLOW.md`
 
 ---
 
 ### Issue 7 — `[1A]` Create frontend Dockerfile
-- [ ] `frontend/Dockerfile` (multi-stage, `node:20-alpine`)
-- [ ] Install deps with `npm ci`, build with `next build`, run on port 3000
-- [ ] Create `frontend/package.json` with all required dependencies
+- [x] `frontend/Dockerfile` (multi-stage, `node:20-alpine`)
+- [x] Install deps with `npm ci`, build with `next build`, run on port 3000
+- [x] Create `frontend/package.json` with all required dependencies
 - **Reference:** Issue 6 dependency list
 
 ---
