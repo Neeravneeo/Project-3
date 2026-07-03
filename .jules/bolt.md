@@ -1,0 +1,3 @@
+## 2025-02-14 - Global Middleware vs Architectural Refactors
+**Learning:** Removing automatic database dependency commits (`get_db`) is a valid performance win for read-heavy routes in SQLAlchemy 2.0. However, doing so requires an architectural refactor to manually add `session.commit()` to all existing write endpoints, making it a high-risk change that can cause regressions (data silently dropping) if missed.
+**Action:** When constrained to "small performance improvements" (< 50 lines) that cannot introduce breaking changes, prefer global optimization at the application layer (like adding FastAPI `GZipMiddleware`) rather than deep dependency refactors that have cascading side-effects.

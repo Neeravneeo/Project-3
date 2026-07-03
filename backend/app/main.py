@@ -9,6 +9,7 @@ from typing import AsyncIterator
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import settings
@@ -45,7 +46,11 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# ─── CORS ────────────────────────────────────────────────────────────────────
+# ─── Middleware ──────────────────────────────────────────────────────────────
+# ⚡ Bolt Optimization: Added GZip middleware to compress large responses
+# and reduce network transfer latency for payload > 1KB.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_url, "http://localhost:3000"],
