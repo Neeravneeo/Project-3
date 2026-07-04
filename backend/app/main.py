@@ -3,19 +3,31 @@ AI Trading & Auto-Hedging Intelligence Platform
 FastAPI Application Entry Point
 """
 
+import json
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 import redis.asyncio as aioredis
+from app.api.v1 import (
+    ai_insights,
+    auth,
+    hedge,
+    market_data,
+    orders,
+    portfolio,
+    risk,
+    signals,
+    strategies,
+)
+from app.api.v1.websocket import router as ws_router
+from app.core.logging import setup_logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import settings
-from app.core.database import create_db_pool, close_db_pool
-from app.core.logging import setup_logging
-from app.api.v1 import auth, portfolio, strategies, signals, orders, risk, hedge, market_data, ai_insights
-from app.api.v1.websocket import router as ws_router
+from app.core.database import close_db_pool, create_db_pool
 
 setup_logging()
 
@@ -72,7 +84,11 @@ app.include_router(ai_insights.router,  prefix=f"{PREFIX}/insights",    tags=["A
 app.include_router(ws_router,           prefix="/ws",                   tags=["WebSocket"])
 
 
+# Pre-serialize health response to skip Pydantic validation/JSON serialization overhead
+_HEALTH_DICT = {"status": "healthy", "version": "1.0.0", "environment": settings.app_env}
+_HEALTH_RESPONSE = Response(content=json.dumps(_HEALTH_DICT).encode("utf-8"), media_type="application/json")
+
 @app.get("/health", tags=["Health"])
-async def health_check() -> dict:
+async def health_check() -> Response:
     """Health check endpoint for Docker and load balancers."""
-    return {"status": "healthy", "version": "1.0.0", "environment": settings.app_env}
+    return _HEALTH_RESPONSE
