@@ -1,0 +1,3 @@
+## 2026-07-05 - Added GZip compression middleware
+**Learning:** Large JSON responses (like market data, AI insights, and portfolio historical charts) can cause significant bandwidth and latency overhead when scaling up if compression is not handled at the middleware or reverse proxy layer. GZip middleware is a simple optimization within FastAPI to solve this before getting to load balancing/proxy configurations.
+**Action:** Always evaluate if an application handles large textual payloads (like API JSON responses) and apply `GZipMiddleware` with an appropriate minimum size threshold (e.g., 1000 bytes) to ensure small responses don't get unnecessary compression overhead while large ones are properly compressed.
