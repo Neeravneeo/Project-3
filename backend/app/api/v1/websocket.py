@@ -24,7 +24,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from contextlib import asynccontextmanager
 from typing import Any
 
 import redis.asyncio as aioredis
@@ -200,8 +199,9 @@ async def websocket_stream(websocket: WebSocket) -> None:
     The client can send ``{"type": "ping"}`` to keep the connection alive,
     and will receive ``{"type": "pong"}`` in response.
     """
-    from app.core.security import get_subject_from_token
     from jose import JWTError
+
+    from app.core.security import get_subject_from_token
 
     token = websocket.query_params.get("token")
     if not token:
@@ -229,7 +229,7 @@ async def websocket_stream(websocket: WebSocket) -> None:
                 msg = json.loads(raw)
                 if msg.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Send a keepalive ping
                 try:
                     await websocket.send_json({"type": "ping"})

@@ -6,16 +6,16 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
-from app.core.config import settings
-from app.models import User, UserSettings, Portfolio
+from app.models import Portfolio, User, UserSettings
 from app.schemas import LoginRequest, TokenResponse, UserCreate, UserResponse
 
 logger = logging.getLogger(__name__)
