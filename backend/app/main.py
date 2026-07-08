@@ -3,21 +3,43 @@ AI Trading & Auto-Hedging Intelligence Platform
 FastAPI Application Entry Point
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 import redis.asyncio as aioredis
+from app.api.v1 import (
+    ai_insights,
+    auth,
+    hedge,
+    market_data,
+    orders,
+    portfolio,
+    risk,
+    signals,
+    strategies,
+)
+from app.api.v1.websocket import router as ws_router
+from app.core.logging import setup_logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from pydantic import BaseModel, ConfigDict
 
 from app.core.config import settings
-from app.core.database import create_db_pool, close_db_pool
-from app.core.logging import setup_logging
-from app.api.v1 import auth, portfolio, strategies, signals, orders, risk, hedge, market_data, ai_insights
-from app.api.v1.websocket import router as ws_router
+from app.core.database import close_db_pool, create_db_pool
 
 setup_logging()
+
+class HealthResponse(BaseModel):
+    """Pydantic model for the health check response.
+    Using a Pydantic model with a defined response_model allows FastAPI >=0.115
+    to natively serialize the response to JSON bytes using Rust, bypassing jsonable_encoder
+    for better performance.
+    """
+    model_config = ConfigDict(from_attributes=True)
+    status: str
+    version: str
+    environment: str
 
 
 @asynccontextmanager
@@ -72,7 +94,7 @@ app.include_router(ai_insights.router,  prefix=f"{PREFIX}/insights",    tags=["A
 app.include_router(ws_router,           prefix="/ws",                   tags=["WebSocket"])
 
 
-@app.get("/health", tags=["Health"])
-async def health_check() -> dict:
+@app.get("/health", tags=["Health"], response_model=HealthResponse)
+async def health_check() -> HealthResponse:
     """Health check endpoint for Docker and load balancers."""
-    return {"status": "healthy", "version": "1.0.0", "environment": settings.app_env}
+    return HealthResponse(status="healthy", version="1.0.0", environment=settings.app_env)
