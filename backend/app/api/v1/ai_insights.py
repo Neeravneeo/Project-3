@@ -11,7 +11,7 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth import CurrentUser

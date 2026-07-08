@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -71,8 +70,9 @@ async def update_thresholds(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict:
     """Update user risk thresholds in user_settings."""
-    from app.models import UserSettings
     from decimal import Decimal
+
+    from app.models import UserSettings
 
     result = await db.execute(
         select(UserSettings).where(UserSettings.user_id == current_user.id)

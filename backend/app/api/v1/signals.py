@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.auth import CurrentUser
 from app.core.database import get_db
 from app.models import Signal
-from app.schemas import SignalResponse, PaginatedResponse
+from app.schemas import PaginatedResponse, SignalResponse
 
 logger = logging.getLogger(__name__)
 

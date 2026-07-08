@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth import CurrentUser
@@ -63,7 +63,6 @@ async def get_quote(
     request_obj: Annotated[object, Depends(lambda: None)],  # placeholder for request
 ) -> QuoteResponse:
     """Return the latest price for a symbol from Redis cache."""
-    from fastapi import Request
 
     symbol = symbol.upper()
     if symbol not in _SYMBOLS:
