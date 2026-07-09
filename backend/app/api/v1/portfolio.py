@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.auth import CurrentUser
 from app.core.database import get_db
 from app.models import Portfolio, Position, RiskSnapshot
-from app.schemas import PortfolioSummary, PortfolioResponse, PositionResponse
+from app.schemas import PortfolioSummary, PositionResponse
 
 logger = logging.getLogger(__name__)
 

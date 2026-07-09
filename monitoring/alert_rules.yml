@@ -1,0 +1,20 @@
+groups:
+  - name: trading_alerts
+    rules:
+      - alert: APIDown
+        expr: up{job="trading-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Trading API is down"
+          description: "The trading-api target has been down for more than 1 minute."
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API Latency"
+          description: "95th percentile latency is over 1 second for the last 5 minutes."

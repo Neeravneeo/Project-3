@@ -20,11 +20,11 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import INET, JSONB, TIMESTAMPTZ, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import INET, JSONB, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
 
 # ─── Shared column helpers ────────────────────────────────────────────────────
 
@@ -58,11 +58,11 @@ class User(Base):
     updated_at: Mapped[datetime] = _now()
 
     # Relationships
-    settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="user", uselist=False)
-    portfolios: Mapped[list["Portfolio"]] = relationship("Portfolio", back_populates="user")
-    strategies: Mapped[list["Strategy"]] = relationship("Strategy", back_populates="user")
-    signals: Mapped[list["Signal"]] = relationship("Signal", back_populates="user")
-    audit_logs: Mapped[list["AuditLog"]] = relationship("AuditLog", back_populates="user")
+    settings: Mapped[UserSettings] = relationship("UserSettings", back_populates="user", uselist=False)
+    portfolios: Mapped[list[Portfolio]] = relationship("Portfolio", back_populates="user")
+    strategies: Mapped[list[Strategy]] = relationship("Strategy", back_populates="user")
+    signals: Mapped[list[Signal]] = relationship("Signal", back_populates="user")
+    audit_logs: Mapped[list[AuditLog]] = relationship("AuditLog", back_populates="user")
 
 
 class UserSettings(Base):
@@ -94,7 +94,7 @@ class UserSettings(Base):
     created_at: Mapped[datetime] = _now()
     updated_at: Mapped[datetime] = _now()
 
-    user: Mapped["User"] = relationship("User", back_populates="settings")
+    user: Mapped[User] = relationship("User", back_populates="settings")
 
 
 # ─── Portfolio ────────────────────────────────────────────────────────────────
@@ -117,11 +117,11 @@ class Portfolio(Base):
     created_at: Mapped[datetime] = _now()
     updated_at: Mapped[datetime] = _now()
 
-    user: Mapped["User"] = relationship("User", back_populates="portfolios")
-    positions: Mapped[list["Position"]] = relationship("Position", back_populates="portfolio")
-    orders: Mapped[list["Order"]] = relationship("Order", back_populates="portfolio")
-    risk_snapshots: Mapped[list["RiskSnapshot"]] = relationship("RiskSnapshot", back_populates="portfolio")
-    hedge_events: Mapped[list["HedgeEvent"]] = relationship("HedgeEvent", back_populates="portfolio")
+    user: Mapped[User] = relationship("User", back_populates="portfolios")
+    positions: Mapped[list[Position]] = relationship("Position", back_populates="portfolio")
+    orders: Mapped[list[Order]] = relationship("Order", back_populates="portfolio")
+    risk_snapshots: Mapped[list[RiskSnapshot]] = relationship("RiskSnapshot", back_populates="portfolio")
+    hedge_events: Mapped[list[HedgeEvent]] = relationship("HedgeEvent", back_populates="portfolio")
 
 
 # ─── Position ─────────────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ class Position(Base):
     opened_at: Mapped[datetime] = _now()
     updated_at: Mapped[datetime] = _now()
 
-    portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="positions")
+    portfolio: Mapped[Portfolio] = relationship("Portfolio", back_populates="positions")
 
 
 # ─── Order ────────────────────────────────────────────────────────────────────
@@ -182,8 +182,8 @@ class Order(Base):
     created_at: Mapped[datetime] = _now()
     updated_at: Mapped[datetime] = _now()
 
-    portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="orders")
-    signal: Mapped["Signal | None"] = relationship("Signal")
+    portfolio: Mapped[Portfolio] = relationship("Portfolio", back_populates="orders")
+    signal: Mapped[Signal | None] = relationship("Signal")
 
 
 # ─── Strategy ────────────────────────────────────────────────────────────────
@@ -209,8 +209,8 @@ class Strategy(Base):
     created_at: Mapped[datetime] = _now()
     updated_at: Mapped[datetime] = _now()
 
-    user: Mapped["User"] = relationship("User", back_populates="strategies")
-    signals: Mapped[list["Signal"]] = relationship("Signal", back_populates="strategy")
+    user: Mapped[User] = relationship("User", back_populates="strategies")
+    signals: Mapped[list[Signal]] = relationship("Signal", back_populates="strategy")
 
 
 # ─── Signal ───────────────────────────────────────────────────────────────────
@@ -239,8 +239,8 @@ class Signal(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("TRUE"))
     created_at: Mapped[datetime] = _now()
 
-    user: Mapped["User"] = relationship("User", back_populates="signals")
-    strategy: Mapped["Strategy"] = relationship("Strategy", back_populates="signals")
+    user: Mapped[User] = relationship("User", back_populates="signals")
+    strategy: Mapped[Strategy] = relationship("Strategy", back_populates="signals")
 
 
 # ─── Market Bars (hypertable — no ORM PK trick needed) ───────────────────────
@@ -288,7 +288,7 @@ class RiskSnapshot(Base):
     risk_score: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = _now()
 
-    portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="risk_snapshots")
+    portfolio: Mapped[Portfolio] = relationship("Portfolio", back_populates="risk_snapshots")
 
 
 # ─── Hedge Event ──────────────────────────────────────────────────────────────
@@ -316,7 +316,7 @@ class HedgeEvent(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'triggered'"))
     created_at: Mapped[datetime] = _now()
 
-    portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="hedge_events")
+    portfolio: Mapped[Portfolio] = relationship("Portfolio", back_populates="hedge_events")
 
 
 # ─── News Item ────────────────────────────────────────────────────────────────
@@ -355,4 +355,4 @@ class AuditLog(Base):
     ip_address: Mapped[str | None] = mapped_column(INET)
     created_at: Mapped[datetime] = _now()
 
-    user: Mapped["User | None"] = relationship("User", back_populates="audit_logs")
+    user: Mapped[User | None] = relationship("User", back_populates="audit_logs")

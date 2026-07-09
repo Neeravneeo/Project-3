@@ -3,19 +3,29 @@ AI Trading & Auto-Hedging Intelligence Platform
 FastAPI Application Entry Point
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from app.core.config import settings
-from app.core.database import create_db_pool, close_db_pool
-from app.core.logging import setup_logging
-from app.api.v1 import auth, portfolio, strategies, signals, orders, risk, hedge, market_data, ai_insights
+from app.api.v1 import (
+    ai_insights,
+    auth,
+    hedge,
+    market_data,
+    orders,
+    portfolio,
+    risk,
+    signals,
+    strategies,
+)
 from app.api.v1.websocket import router as ws_router
+from app.core.config import settings
+from app.core.database import close_db_pool, create_db_pool
+from app.core.logging import setup_logging
 
 setup_logging()
 
