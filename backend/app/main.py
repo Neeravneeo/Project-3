@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.v1 import (
@@ -63,6 +64,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ─── GZip Compression ────────────────────────────────────────────────────────
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ─── Prometheus Metrics ───────────────────────────────────────────────────────
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
