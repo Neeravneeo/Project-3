@@ -1,84 +1,102 @@
-import type { Config } from "tailwindcss"
+import type { Config } from 'tailwindcss';
+import animate from 'tailwindcss-animate';
 
-const config = {
-  darkMode: ["class"],
+const config: Config = {
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
+      // ── Design System Colors (DESIGN.md) ───────────────────
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
+        'canvas-night':      '#000000',
+        'canvas-night-soft': '#0a0a0a',
+        'canvas-light':      '#ffffff',
+        'canvas-cool':       '#f0f0fa',
+        'hairline-dark':     '#3a3a3f',
+        'hairline-light':    '#e0e0e8',
+        'on-primary':        '#ffffff',
+        'on-primary-mute':   '#f0f0fa',
+        ink:                 '#000000',
+        'ink-mute':          '#5a5a5f',
+        // Signal surface tints (NOT accent colors)
+        'buy-tint':          '#1a2a1a',
+        'sell-tint':         '#2a1a1a',
       },
+
+      // ── Font Family ─────────────────────────────────────────
+      fontFamily: {
+        din: ['Inter', 'Arial Narrow', 'Arial', 'sans-serif'],
+        sans: ['Inter', 'Arial Narrow', 'Arial', 'sans-serif'],
+      },
+
+      // ── Typography (display hierarchy from DESIGN.md) ──────
+      fontSize: {
+        'display-xxl': ['80px', { lineHeight: '0.95', letterSpacing: '1.6px'  }],
+        'display-xl':  ['60px', { lineHeight: '1.2',  letterSpacing: '1.2px'  }],
+        'display-lg':  ['48px', { lineHeight: '1.25', letterSpacing: '0.96px' }],
+        'body-lg':     ['16px', { lineHeight: '1.7',  letterSpacing: '0.32px' }],
+        'body-md':     ['16px', { lineHeight: '1.5',  letterSpacing: '0.32px' }],
+        'button-cap':  ['13.008px', { lineHeight: '0.94', letterSpacing: '1.17px' }],
+        'micro-cap':   ['12px', { lineHeight: '2.0',  letterSpacing: '0.96px' }],
+        caption:       ['13.008px', { lineHeight: '1.5', letterSpacing: '0' }],
+      },
+
+      // ── Spacing (DESIGN.md base-8 system) ──────────────────
+      spacing: {
+        xxs:  '4px',
+        xs:   '8px',
+        sm:   '12px',
+        md:   '16px',
+        lg:   '18px',
+        xl:   '24px',
+        xxl:  '32px',
+        huge: '48px',
+      },
+
+      // ── Border Radius ───────────────────────────────────────
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xs:   '4px',
+        sm:   '8px',
+        md:   '16px',
+        pill: '32px',
+        full: '9999px',
       },
+
+      // ── Breakpoints (DESIGN.md) ─────────────────────────────
+      screens: {
+        'sm-mobile': '600px',
+        mobile:      '768px',
+        tablet:      '960px',
+        laptop:      '1280px',
+        desktop:     '1500px',
+      },
+
+      // ── Keyframes ───────────────────────────────────────────
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+        'chevron-pulse': {
+          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
+          '50%':       { opacity: '0.9', transform: 'translateY(6px)' },
         },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(28px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        'draw-line': {
+          from: { strokeDashoffset: '1000' },
+          to:   { strokeDashoffset: '0' },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        'chevron-pulse': 'chevron-pulse 2s ease-in-out infinite',
+        'fade-up':       'fade-up 0.8s ease forwards',
+        'draw-line':     'draw-line 2s ease forwards',
       },
-      fontFamily: {
-        sans: ["var(--font-inter)"],
-        mono: ["var(--font-jetbrains-mono)"],
-      }
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+  plugins: [animate],
+};
 
-export default config
+export default config;

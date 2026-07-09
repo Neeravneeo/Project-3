@@ -1,108 +1,301 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ─────────────────────────────────────────────────────────────
+   TradeAI — Global Styles
+   Design system: DESIGN.md (SpaceX-inspired, black/white only)
+   Font: Inter 700 as D-DIN-Bold substitute
+───────────────────────────────────────────────────────────── */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/* ── Design Tokens ──────────────────────────────────────────── */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  /* Surfaces */
+  --canvas-night:      #000000;
+  --canvas-night-soft: #0a0a0a;
+  --canvas-light:      #ffffff;
+  --canvas-cool:       #f0f0fa;
+
+  /* Borders */
+  --hairline-dark:  #3a3a3f;
+  --hairline-light: #e0e0e8;
+
+  /* Text */
+  --on-primary:      #ffffff;
+  --on-primary-mute: #f0f0fa;
+  --ink:             #000000;
+  --ink-mute:        #5a5a5f;
+
+  /* Typography sizes */
+  --text-display-xxl: 80px;
+  --text-display-xl:  60px;
+  --text-display-lg:  48px;
+  --text-body-lg:     16px;
+  --text-body-md:     16px;
+  --text-button-cap:  13.008px;
+  --text-micro-cap:   12px;
+  --text-caption:     13.008px;
+
+  /* Spacing */
+  --space-xxs:  4px;
+  --space-xs:   8px;
+  --space-sm:   12px;
+  --space-md:   16px;
+  --space-lg:   18px;
+  --space-xl:   24px;
+  --space-xxl:  32px;
+  --space-huge: 48px;
+
+  /* Border radius */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-pill: 32px;
+  --radius-full: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+/* ── Reset ──────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+html {
+  background: var(--canvas-night);
+  color: var(--on-primary);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@layer base {
-  .theme {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-  }
-  :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-  }
-  .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-  }
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+body {
+  font-family: 'Inter', 'Arial Narrow', Arial, sans-serif;
+  font-size: var(--text-body-md);
+  line-height: 1.5;
+  letter-spacing: 0.32px;
+  background: var(--canvas-night);
+  color: var(--on-primary);
+}
+
+/* ── Scrollbar (dark) ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--canvas-night); }
+::-webkit-scrollbar-thumb { background: var(--hairline-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #5a5a5f; }
+
+/* ── Typography Utilities ───────────────────────────────────── */
+
+/* 80px display — hero headline */
+.display-xxl {
+  font-size: clamp(40px, 6vw, var(--text-display-xxl));
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--on-primary);
+}
+
+/* 60px section opener */
+.display-xl {
+  font-size: clamp(32px, 4.5vw, var(--text-display-xl));
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--on-primary);
+}
+
+/* 48px sub-section heading */
+.display-lg {
+  font-size: clamp(28px, 3.5vw, var(--text-display-lg));
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
+  color: var(--on-primary);
+}
+
+/* 16px marketing body lead */
+.body-lg {
+  font-size: var(--text-body-lg);
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.32px;
+  color: var(--on-primary);
+}
+
+/* 16px default UI body */
+.body-md {
+  font-size: var(--text-body-md);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.32px;
+  color: var(--on-primary);
+}
+
+/* 13px all-caps button label */
+.button-cap {
+  font-size: var(--text-button-cap);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+  color: var(--on-primary);
+}
+
+/* 12px eyebrow / nav item */
+.micro-cap {
+  font-size: var(--text-micro-cap);
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
+  color: var(--on-primary-mute);
+}
+
+/* 13px helper / footer */
+.caption {
+  font-size: var(--text-caption);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--ink-mute);
+}
+
+/* ── Component Classes ──────────────────────────────────────── */
+
+/* Ghost pill CTA — the ONLY marketing button */
+.btn-ghost-dark {
+  display: inline-block;
+  padding: var(--space-lg) var(--space-xl);
+  border: 1px solid var(--on-primary);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--on-primary);
+  font-family: inherit;
+  font-size: var(--text-button-cap);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+.btn-ghost-dark:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Ghost pill on light surface */
+.btn-ghost-light {
+  display: inline-block;
+  padding: var(--space-lg) var(--space-xl);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-button-cap);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn-ghost-light:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Fixed overlay nav — transparent over hero imagery/charts */
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: transparent;
+  padding: var(--space-xl) var(--space-xxl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Data card — canvas-night-soft with hairline border */
+.card-data {
+  background: var(--canvas-night-soft);
+  border: 1px solid var(--hairline-dark);
+  padding: var(--space-xl);
+}
+
+/* Hairline divider */
+.hairline {
+  border: none;
+  border-top: 1px solid var(--hairline-dark);
+}
+
+/* Full-bleed band */
+.band {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Inner reading column — 1200px max */
+.col {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-xxl);
+  width: 100%;
+}
+
+/* ── Signal surface tints (NOT accent colors) ──────────────── */
+.signal-buy-tint  { background: #1a2a1a; border-color: #2a5a2a; }
+.signal-sell-tint { background: #2a1a1a; border-color: #5a2a2a; }
+.signal-hold-tint { background: #1a1a1a; border-color: var(--hairline-dark); }
+
+/* ── Links ──────────────────────────────────────────────────── */
+.link-dark {
+  color: var(--on-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-light {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Fade-in animation (JS-driven via class toggle) ─────────── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Responsive type staircase ──────────────────────────────── */
+@media (max-width: 960px) {
+  .display-xxl { font-size: 60px; }
+  .display-xl  { font-size: 48px; }
+  .display-lg  { font-size: 36px; }
+}
+@media (max-width: 768px) {
+  .display-xxl { font-size: 48px; }
+  .display-xl  { font-size: 36px; }
+  .display-lg  { font-size: 28px; }
+  .nav-overlay { padding: var(--space-md) var(--space-xl); }
+}
+@media (max-width: 600px) {
+  .display-xxl { font-size: 40px; }
+  .display-xl  { font-size: 32px; }
+  .col { padding: 0 var(--space-md); }
 }
