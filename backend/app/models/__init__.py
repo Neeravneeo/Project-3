@@ -11,7 +11,6 @@ from sqlalchemy import (
     ARRAY,
     BigInteger,
     Boolean,
-    Column,
     Date,
     ForeignKey,
     Integer,

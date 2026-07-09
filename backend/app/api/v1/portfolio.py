@@ -25,7 +25,7 @@ async def _get_active_portfolio(user_id: UUID, db: AsyncSession) -> Portfolio:
     """Return the user's active portfolio or raise 404."""
     result = await db.execute(
         select(Portfolio)
-        .where(Portfolio.user_id == user_id, Portfolio.is_active == True)
+        .where(Portfolio.user_id == user_id, Portfolio.is_active)
         .limit(1)
     )
     portfolio = result.scalar_one_or_none()

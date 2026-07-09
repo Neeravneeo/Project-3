@@ -27,7 +27,7 @@ async def get_hedge_status(
     """Return the current hedge engine status."""
     port_result = await db.execute(
         select(Portfolio)
-        .where(Portfolio.user_id == current_user.id, Portfolio.is_active == True)
+        .where(Portfolio.user_id == current_user.id, Portfolio.is_active)
         .limit(1)
     )
     portfolio = port_result.scalar_one_or_none()
@@ -61,7 +61,7 @@ async def get_hedge_history(
     """Return the hedge event log for the user's portfolio."""
     port_result = await db.execute(
         select(Portfolio)
-        .where(Portfolio.user_id == current_user.id, Portfolio.is_active == True)
+        .where(Portfolio.user_id == current_user.id, Portfolio.is_active)
         .limit(1)
     )
     portfolio = port_result.scalar_one_or_none()

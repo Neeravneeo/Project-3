@@ -27,7 +27,7 @@ async def get_risk_metrics(
     """Return the latest risk metrics snapshot for the user's portfolio."""
     port_result = await db.execute(
         select(Portfolio)
-        .where(Portfolio.user_id == current_user.id, Portfolio.is_active == True)
+        .where(Portfolio.user_id == current_user.id, Portfolio.is_active)
         .limit(1)
     )
     portfolio = port_result.scalar_one_or_none()

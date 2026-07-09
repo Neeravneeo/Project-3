@@ -5,3 +5,7 @@
 ## 2026-07-09 - [Prometheus & Next.js Scaffolding]
 **Learning:** Initializing a frontend framework like Next.js directly via `create-next-app` inside the workspace sets up dependencies correctly with less manual intervention. Defining standard Prometheus/Grafana configs ensures metrics tracking operates securely and stably outside of the application container logic.
 **Action:** Next time when spinning up a fullstack environment, initialize frontends with standard CLI tooling to avoid missing config/deps and configure `prometheus.yml` independently using standard global configs for scraping endpoints.
+
+## 2026-07-09 - [Frontend Dockerfile and Linting]
+**Learning:** Creating a multi-stage `node:alpine` Dockerfile for Next.js reduces production image size drastically using the standalone output. Also, ensuring `ruff` runs with `--unsafe-fixes` when absolutely necessary, or filtering out unused imports manually, maintains backend health.
+**Action:** Always prefer `output: 'standalone'` in Next.js config for container deployments to leverage optimized builds. Use `ruff check . --fix` aggressively as a pre-commit measure to handle simple Python lint issues like sorting imports or generic typing.
