@@ -1,6 +1,6 @@
 """Security utilities: JWT token handling and bcrypt password hashing."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from jose import JWTError, jwt
@@ -33,12 +33,12 @@ def create_access_token(subject: str | Any, expires_delta: timedelta | None = No
     Returns:
         Encoded JWT string.
     """
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta
         if expires_delta is not None
         else timedelta(minutes=settings.jwt_access_token_expire_minutes)
     )
-    payload = {"sub": str(subject), "exp": expire, "iat": datetime.now(timezone.utc)}
+    payload = {"sub": str(subject), "exp": expire, "iat": datetime.now(UTC)}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 

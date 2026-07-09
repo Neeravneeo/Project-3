@@ -395,10 +395,10 @@
 > **Goal:** Strategies testable against historical data, quantstats reports generated
 
 ### Issue 22 — `[1F]` Create backtesting API endpoints
-- [ ] Create `backend/app/api/v1/backtesting.py`
-  - `POST /api/v1/backtest/run` → queue Celery task → return `task_id`
-  - `GET /api/v1/backtest/results/{task_id}` → status + results
-  - `GET /api/v1/backtest/reports/{task_id}` → quantstats HTML report URL
+- [x] Create `backend/app/api/v1/backtesting.py`
+  - [x] `POST /api/v1/backtest/run` → queue Celery task → return `task_id`
+  - [x] `GET /api/v1/backtest/results/{task_id}` → status + results
+  - [x] `GET /api/v1/backtest/reports/{task_id}` → quantstats HTML report URL
 - **Reference:** `docs/2_TRD.md` Section 6
 
 ---
@@ -406,7 +406,7 @@
 ### ✅ Phase 1F Complete When:
 - [ ] Backtest runs EMA Crossover on AAPL for 1 year
 - [ ] quantstats HTML report generated (Sharpe, MDD, returns)
-- [ ] Results accessible via API
+- [x] Results accessible via API
 
 ---
 

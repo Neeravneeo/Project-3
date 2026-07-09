@@ -30,7 +30,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
 
     # ─── Config ──────────────────────────────────────────────
-    "pydantic>=2.10.0",
+    "pydantic[email]>=2.10.0",
     "pydantic-settings>=2.6.0",
     "python-dotenv>=1.0.1",
 
@@ -104,3 +104,6 @@ typeCheckingMode = "standard"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
