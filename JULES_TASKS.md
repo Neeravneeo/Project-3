@@ -276,43 +276,43 @@
 > **Goal:** LangGraph agents running, FinBERT scoring news, Gemini generating summaries
 
 ### Issue 14 — `[1D]` Create AI insights API endpoints
-- [ ] Create `backend/app/api/v1/ai_insights.py`
-  - `GET /api/v1/insights/summary` → Gemini market summary (cached 1hr)
-  - `GET /api/v1/insights/news` → news feed with FinBERT scores
-  - `GET /api/v1/insights/sentiment` → aggregated sentiment per ticker (24h)
-  - `GET /api/v1/insights/regime` → market regime classification
-  - `GET /api/v1/insights/observations` → Gemini portfolio observations
+- [x] Create `backend/app/api/v1/ai_insights.py`
+  - [x] `GET /api/v1/insights/summary` → Gemini market summary (cached 1hr)
+  - [x] `GET /api/v1/insights/news` → news feed with FinBERT scores
+  - [x] `GET /api/v1/insights/sentiment` → aggregated sentiment per ticker (24h)
+  - [x] `GET /api/v1/insights/regime` → market regime classification
+  - [x] `GET /api/v1/insights/observations` → Gemini portfolio observations
 - **Reference:** `docs/3_APP_FLOW.md` Section 6
 
 ---
 
 ### Issue 15 — `[1D]` Create news ingestion background task
-- [ ] Create `backend/workers/tasks/news.py`
-  - Task: `fetch_news_headlines()` → Yahoo Finance RSS (feedparser) → `news_items` table
-  - Task: `score_news_sentiment(news_item_id)` → FinBERT → update `sentiment_label`, `sentiment_score`, Redis cache
+- [x] Create `backend/workers/tasks/news.py`
+  - [x] Task: `fetch_news_headlines()` → Yahoo Finance RSS (feedparser) → `news_items` table
+  - [x] Task: `score_news_sentiment(news_item_id)` → FinBERT → update `sentiment_label`, `sentiment_score`, Redis cache
 - Schedule: every 15 minutes during market hours
 - **Reference:** `docs/2_TRD.md` Section 6
 
 ---
 
 ### Issue 16 — `[1D]` Build AI Insights frontend page
-- [ ] Create `frontend/src/app/insights/page.tsx`
-- [ ] Market Regime Banner (pill badge: BULL / BEAR / HIGH_VOL / SIDEWAYS)
-- [ ] Daily Market Summary card (Gemini text + refresh button)
-- [ ] Portfolio Observations card (Gemini bullet points)
-- [ ] News Feed table (Source | Headline | Sentiment badge | Score | Time) + filter tabs
-- [ ] Sentiment Trend chart (Recharts line chart per ticker)
-- [ ] Skeleton loaders for all sections
+- [x] Create `frontend/src/app/insights/page.tsx`
+- [x] Market Regime Banner (pill badge: BULL / BEAR / HIGH_VOL / SIDEWAYS)
+- [x] Daily Market Summary card (Gemini text + refresh button)
+- [x] Portfolio Observations card (Gemini bullet points)
+- [x] News Feed table (Source | Headline | Sentiment badge | Score | Time) + filter tabs
+- [x] Sentiment Trend chart (Recharts line chart per ticker)
+- [x] Skeleton loaders for all sections
 - Use TanStack Query. Follow design system exactly.
 - **Reference:** `docs/3_APP_FLOW.md` Section 6 + `docs/4_UI_UX_BRIEF.md`
 
 ---
 
 ### ✅ Phase 1D Complete When:
-- [ ] `GET /api/v1/insights/summary` returns Gemini-generated text
-- [ ] News headlines have FinBERT sentiment scores in DB
-- [ ] Market regime detected correctly
-- [ ] AI Insights page displays all 5 sections
+- [x] `GET /api/v1/insights/summary` returns Gemini-generated text
+- [x] News headlines have FinBERT sentiment scores in DB
+- [x] Market regime detected correctly
+- [x] AI Insights page displays all 5 sections
 
 ---
 
