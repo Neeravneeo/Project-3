@@ -237,38 +237,37 @@
 > **Goal:** Risk metrics computed, hedge engine monitoring and triggering automatically
 
 ### Issue 12 — `[1C]` Create risk & hedge API endpoints
-- [ ] Create `backend/app/api/v1/risk.py`
-  - `GET /api/v1/risk/metrics` → VaR, CVaR, beta, drawdown, Sharpe, Sortino
-  - `GET /api/v1/risk/exposure` → sector + asset exposure
-  - `PUT /api/v1/risk/thresholds` → update user risk thresholds
-- [ ] Create `backend/app/api/v1/hedge.py`
-  - `GET /api/v1/hedge/status`
-  - `GET /api/v1/hedge/history`
-  - `POST /api/v1/hedge/trigger`
+- [x] Create `backend/app/api/v1/risk.py`
+  - [x] `GET /api/v1/risk/metrics` → VaR, CVaR, beta, drawdown, Sharpe, Sortino
+  - [x] `GET /api/v1/risk/exposure` → sector + asset exposure
+  - [x] `PUT /api/v1/risk/thresholds` → update user risk thresholds
+- [x] Create `backend/app/api/v1/hedge.py`
+  - [x] `GET /api/v1/hedge/status`
+  - [x] `GET /api/v1/hedge/history`
+  - [x] `POST /api/v1/hedge/trigger`
 - **Reference:** `docs/3_APP_FLOW.md` Section 5
 
 ---
 
 ### Issue 13 — `[1C]` Write unit tests for risk engine
-- [ ] Create `backend/tests/test_risk_metrics.py`
-- [ ] `test_sharpe_ratio`
-- [ ] `test_sortino_ratio`
-- [ ] `test_max_drawdown` — verify `-0.05` on known data
-- [ ] `test_portfolio_beta` — verify `beta=1.0` when portfolio = SPY
-- [ ] `test_var_historical` — 95% VaR
-- [ ] `test_cvar` — expected shortfall
-- [ ] `test_calmar_ratio`
+- [x] Create `backend/tests/test_risk_metrics.py`
+- [x] `test_sharpe_ratio`
+- [x] `test_sortino_ratio`
+- [x] `test_max_drawdown` — verify `-0.05` on known data
+- [x] `test_portfolio_beta` — verify `beta=1.0` when portfolio = SPY
+- [x] `test_var_historical` — 95% VaR
+- [x] `test_cvar` — expected shortfall
+- [x] `test_calmar_ratio`
 - Use `pytest` + sample pandas Series. Mock yfinance calls.
 - **Reference:** `docs/5_BACKEND_SCHEMA.md` + `docs/2_TRD.md`
-- **Blocked:** Waits for Antigravity to complete `app/domains/risk/metrics.py`
 
 ---
 
 ### ✅ Phase 1C Complete When:
-- [ ] `GET /api/v1/risk/metrics` returns all risk metrics
-- [ ] Hedge engine detects VIX > threshold (simulated)
-- [ ] Hedge recommendation generated with explanation
-- [ ] Risk Dashboard page displays all metrics
+- [x] `GET /api/v1/risk/metrics` returns all risk metrics
+- [x] Hedge engine detects VIX > threshold (simulated)
+- [x] Hedge recommendation generated with explanation
+- [x] Risk Dashboard page displays all metrics
 
 ---
 

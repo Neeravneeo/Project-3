@@ -8,6 +8,7 @@ Used by: risk API, pre-trade checks, post-trade monitoring, Celery snapshots.
 
 from __future__ import annotations
 
+import math
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -21,10 +22,14 @@ def sharpe_ratio(returns: pd.Series, risk_free: float = 0.045, periods: int = 25
     risk_free: annual rate (US 10yr ~4.5%, India 10yr ~6.5%)
     periods:   252 for daily, 52 for weekly, 12 for monthly
     """
-    if returns.empty or returns.std() == 0:
+    if returns.empty or len(returns) <= 1:
+        return 0.0
+    std = float(returns.std())
+    if np.isnan(std) or std <= 1e-12:
         return 0.0
     excess = returns - (risk_free / periods)
-    return float(np.sqrt(periods) * excess.mean() / excess.std())
+    excess_std = float(excess.std())
+    return float(np.sqrt(periods) * float(excess.mean()) / excess_std)
 
 
 def sortino_ratio(returns: pd.Series, risk_free: float = 0.045, periods: int = 252) -> float:
@@ -32,13 +37,15 @@ def sortino_ratio(returns: pd.Series, risk_free: float = 0.045, periods: int = 2
     Sortino Ratio — penalizes only downside volatility.
     Superior to Sharpe for asymmetric return distributions.
     """
-    if returns.empty:
+    if returns.empty or len(returns) <= 1:
         return 0.0
-    excess = returns - (risk_free / periods)
     downside = returns[returns < 0]
-    if downside.empty or downside.std() == 0:
-        return float("inf")
+    if downside.empty:
+        return float("inf") if annualized_return(returns, periods) > risk_free else 0.0
     downside_std = float(np.sqrt((downside ** 2).mean()) * np.sqrt(periods))
+    if np.isnan(downside_std) or downside_std <= 1e-12:
+        return float("inf") if annualized_return(returns, periods) > risk_free else 0.0
+    excess = returns - (risk_free / periods)
     return float(excess.mean() * periods / downside_std)
 
 
@@ -49,10 +56,10 @@ def max_drawdown(returns: pd.Series) -> float:
     """
     if returns.empty:
         return 0.0
-    cum    = (1 + returns).cumprod()
-    peak   = cum.cummax()
-    dd     = (cum - peak) / peak
-    return float(dd.min())
+    cum = (1 + returns).cumprod()
+    peak = cum.cummax()
+    dd = np.where(peak > 1e-12, (cum - peak) / peak, -1.0)
+    return float(np.min(dd))
 
 
 def calmar_ratio(returns: pd.Series, periods: int = 252) -> float:
@@ -60,11 +67,13 @@ def calmar_ratio(returns: pd.Series, periods: int = 252) -> float:
     Calmar Ratio = Annualized Return / |Max Drawdown|
     Higher is better. < 0.5 = poor, > 1.0 = good.
     """
-    if returns.empty:
+    if returns.empty or len(returns) <= 1:
         return 0.0
-    annual_return = float((1 + returns.mean()) ** periods - 1)
     mdd = abs(max_drawdown(returns))
-    return float(annual_return / mdd) if mdd != 0 else float("inf")
+    ann_ret = annualized_return(returns, periods)
+    if np.isnan(mdd) or mdd <= 1e-12:
+        return float("inf") if ann_ret > 0 else 0.0
+    return float(ann_ret / mdd)
 
 
 def annualized_return(returns: pd.Series, periods: int = 252) -> float:
@@ -76,9 +85,12 @@ def annualized_return(returns: pd.Series, periods: int = 252) -> float:
 
 def annualized_volatility(returns: pd.Series, periods: int = 252) -> float:
     """Annualized standard deviation of returns."""
-    if returns.empty:
+    if returns.empty or len(returns) <= 1:
         return 0.0
-    return float(returns.std() * np.sqrt(periods))
+    std = float(returns.std())
+    if np.isnan(std) or std <= 1e-12:
+        return 0.0
+    return float(std * np.sqrt(periods))
 
 
 def win_rate(returns: pd.Series) -> float:
@@ -106,9 +118,12 @@ def var_parametric(returns: pd.Series, confidence: float = 0.95) -> float:
     Parametric VaR assuming normal distribution.
     Less accurate for fat-tailed financial returns.
     """
-    if returns.empty:
+    if returns.empty or len(returns) <= 1:
         return 0.0
-    return float(stats.norm.ppf(1 - confidence, returns.mean(), returns.std()))
+    std = float(returns.std())
+    if np.isnan(std) or std <= 1e-12:
+        return 0.0
+    return float(stats.norm.ppf(1 - confidence, float(returns.mean()), std))
 
 
 def cvar(returns: pd.Series, confidence: float = 0.95) -> float:
@@ -155,11 +170,13 @@ def portfolio_beta(
         return 1.0
     if window:
         combined = combined.tail(window)
+        if len(combined) < 5:
+            return 1.0
     p = combined.iloc[:, 0]
     b = combined.iloc[:, 1]
     cov_matrix = np.cov(p, b)
-    bench_var  = cov_matrix[1, 1]
-    if bench_var == 0:
+    bench_var = cov_matrix[1, 1]
+    if np.isnan(bench_var) or bench_var <= 1e-12:
         return 1.0
     return float(cov_matrix[0, 1] / bench_var)
 
@@ -177,7 +194,7 @@ def rolling_beta(
         slice_ = combined.iloc[i - window:i]
         cov = np.cov(slice_["port"], slice_["bench"])
         bench_var = cov[1, 1]
-        beta = cov[0, 1] / bench_var if bench_var != 0 else 1.0
+        beta = 1.0 if (np.isnan(bench_var) or bench_var <= 1e-12) else float(cov[0, 1] / bench_var)
         betas.append(beta)
     idx = combined.index[window - 1:]
     return pd.Series(betas, index=idx)
@@ -259,27 +276,44 @@ def compute_all_metrics(
         concentration=largest_position_weight,
     )
 
-    return {
+    dollar_var = var_dollar(ret, portfolio_value)
+    dollar_cvar = cvar_dollar(ret, portfolio_value)
+
+    res = {
         # Core ratios
-        "sharpe_ratio":           round(sharpe, 4),
-        "sortino_ratio":          round(sortino, 4),
-        "calmar_ratio":           round(calmar, 4),
+        "sharpe_ratio":           sharpe,
+        "sortino_ratio":          sortino,
+        "calmar_ratio":           calmar,
         # Return / vol
-        "annualized_return":      round(ann_ret, 4),
-        "annualized_volatility":  round(ann_vol, 4),
-        "win_rate":               round(wr, 4),
+        "annualized_return":      ann_ret,
+        "annualized_volatility":  ann_vol,
+        "win_rate":               wr,
         # Risk
-        "portfolio_beta":         round(beta, 4),
-        "max_drawdown":           round(mdd, 4),
-        "var_95_pct":             round(var_pct, 4),
-        "cvar_95_pct":            round(cvar_pct, 4),
-        "var_95_dollar":          round(var_dollar(ret, portfolio_value), 2),
-        "cvar_95_dollar":         round(cvar_dollar(ret, portfolio_value), 2),
+        "portfolio_beta":         beta,
+        "max_drawdown":           mdd,
+        "var_95_pct":             var_pct,
+        "cvar_95_pct":            cvar_pct,
+        "var_95_dollar":          dollar_var,
+        "cvar_95_dollar":         dollar_cvar,
         # Composite score
         "risk_score":             risk_score,
         # Meta
         "data_points":            len(ret),
     }
+
+    sanitized = {}
+    for k, v in res.items():
+        if isinstance(v, float):
+            if math.isnan(v) or math.isinf(v):
+                sanitized[k] = 0.0
+            elif k in ("var_95_dollar", "cvar_95_dollar"):
+                sanitized[k] = round(v, 2)
+            else:
+                sanitized[k] = round(v, 4)
+        else:
+            sanitized[k] = v
+
+    return sanitized
 
 
 def _empty_metrics() -> dict:
@@ -291,3 +325,4 @@ def _empty_metrics() -> dict:
         "var_95_dollar": 0.0, "cvar_95_dollar": 0.0,
         "risk_score": 0, "data_points": 0,
     }
+
