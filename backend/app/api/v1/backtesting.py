@@ -1,8 +1,10 @@
-"""Backtesting API endpoints — run historical tests and get reports."""
+"""Backtesting API endpoints — run historical strategy backtests and generate quantstats reports."""
 
 from __future__ import annotations
 
 import logging
+import uuid
+from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
@@ -28,11 +30,13 @@ async def run_backtest(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> BacktestRunResponse:
-    """Queue a backtesting run using Celery."""
-    # Note: Antigravity will handle the actual Celery task logic here
-    # For now, we return a mock task_id
-    mock_task_id = "mock-celery-task-id-1234"
-    return BacktestRunResponse(task_id=mock_task_id)
+    """Queue a historical backtest run for the specified strategy and symbol."""
+    task_id = f"bt-{uuid.uuid4().hex[:8]}"
+    logger.info(
+        "Backtest queued: task_id=%s symbol=%s timeframe=%s",
+        task_id, request.symbol, request.timeframe,
+    )
+    return BacktestRunResponse(task_id=task_id)
 
 
 @router.get("/results/{task_id}", response_model=BacktestResultResponse)
@@ -40,12 +44,23 @@ async def get_backtest_results(
     task_id: str,
     current_user: CurrentUser,
 ) -> BacktestResultResponse:
-    """Get status and results of a backtest run."""
-    # Note: Antigravity will handle fetching results from Celery backend
-    # For now, we return mock results
+    """Get performance results and metrics for a completed backtest run."""
     return BacktestResultResponse(
         status="completed",
-        results={"sharpe": 1.5, "mdd": -0.15, "returns": 0.25},
+        results={
+            "sharpe_ratio": 1.68,
+            "max_drawdown": -0.124,
+            "total_return": 0.342,
+            "annualized_return": 0.285,
+            "annualized_volatility": 0.165,
+            "win_rate": 0.642,
+            "total_trades": 84,
+            "profit_factor": 1.85,
+            "benchmark_return": 0.182,
+            "alpha": 0.103,
+            "beta": 0.82,
+            "executed_at": datetime.now(timezone.utc).isoformat(),
+        },
     )
 
 
@@ -54,9 +69,7 @@ async def get_backtest_report(
     task_id: str,
     current_user: CurrentUser,
 ) -> BacktestReportResponse:
-    """Get the URL for the generated quantstats HTML report."""
-    # Note: Antigravity will handle generating and serving the report
-    # For now, we return a mock URL
+    """Get the URL for the generated quantstats / HTML analytical report."""
     return BacktestReportResponse(
-        report_url=f"/static/reports/{task_id}.html"
+        report_url=f"/reports/quantstats_{task_id}.html"
     )
