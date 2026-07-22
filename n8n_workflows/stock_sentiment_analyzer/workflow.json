@@ -1,0 +1,188 @@
+{
+  "name": "Stock Sentiment Analyzer Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stock-sentiment",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "webhook-trigger-node",
+      "name": "Webhook Trigger"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ticker-assign",
+              "name": "ticker",
+              "value": "={{ ($json.query?.ticker || $json.body?.ticker || $json.ticker || 'AAPL').toString().trim().toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp-assign",
+              "name": "timestamp",
+              "value": "={{ $now.toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        450,
+        300
+      ],
+      "id": "normalize-ticker-node",
+      "name": "Normalize Ticker"
+    },
+    {
+      "parameters": {
+        "url": "=https://news.google.com/rss/search?q={{ $json.ticker }}+stock+financial+news&hl=en-US&gl=US&ceid=US:en",
+        "options": {
+          "continueOnFail": true,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        650,
+        300
+      ],
+      "id": "fetch-news-rss-node",
+      "name": "Fetch Google News RSS"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst ticker = $(\"Normalize Ticker\").first().json.ticker || \"AAPL\";\nlet newsContext = \"\";\nlet articleCount = 0;\n\ntry {\n  if (items && items.length > 0 && items[0].json) {\n    const rawText = items[0].json.data || items[0].json.body || JSON.stringify(items[0].json);\n    const titleMatches = [...rawText.matchAll(/<title>(.*?)<\\/title>/g)];\n    const descMatches = [...rawText.matchAll(/<description>(.*?)<\\/description>/g)];\n    \n    const articles = [];\n    for (let i = 1; i < Math.min(titleMatches.length, 11); i++) {\n      const title = (titleMatches[i]?.[1] || \"\").replace(/<!\\[CDATA\\[|\\]\\]>/g, \"\").replace(/<[^>]*>?/gm, \"\").trim();\n      const desc = (descMatches[i]?.[1] || \"\").replace(/<!\\[CDATA\\[|\\]\\]>/g, \"\").replace(/<[^>]*>?/gm, \"\").trim();\n      if (title) {\n        articles.push(`Article ${i}: ${title}\\nSummary: ${desc}`);\n      }\n    }\n    \n    if (articles.length > 0) {\n      articleCount = articles.length;\n      newsContext = articles.join(\"\\n\\n\");\n    }\n  }\n} catch (err) {\n  // Gracefully catch XML/parsing errors\n}\n\nif (!newsContext || newsContext.trim().length === 0) {\n  newsContext = `No active RSS news headlines retrieved for ticker ${ticker}. Evaluating based on fundamental quantitative ratios, revenue growth trends, profit margins, cost structure control, and competitive moat metrics for ${ticker}.`;\n}\n\nreturn [{\n  json: {\n    ticker: ticker,\n    articleCount: articleCount,\n    newsContext: newsContext\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        850,
+        300
+      ],
+      "id": "aggregate-clean-code-node",
+      "name": "News Data Aggregator & Cleaner"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.OPENROUTER_API_KEY || $env.OPENAI_API_KEY || 'your-openrouter-api-key-here' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"model\":\"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free\",\"temperature\":0.2,\"messages\":[{\"role\":\"system\",\"content\":\"You are a Senior Wall Street Equity Research Analyst & Quantitative Financial Specialist.\\nYour task is to analyze financial news context and stock market fundamentals for ticker symbol: {{ $json.ticker }}.\\n\\nREQUIRED OUTPUT FORMAT:\\nYou MUST produce a high-quality, professional GitHub-flavored Markdown document with EXACTLY the following 4 sections and section titles:\\n\\n## Executive Summary & Overall News Sentiment\\n- Summarize the current narrative, market perception, and key drivers for {{ $json.ticker }}.\\n- Explicitly state the overall sentiment rating: Bullish, Bearish, or Neutral.\\n\\n## Profitability & Financial Health Analysis\\n- Explicitly evaluate:\\n  1. Revenue Growth Trajectory (top-line growth rate and momentum)\\n  2. Profit Margins (gross margin, operating margin, net profit margin trends)\\n  3. Cost Structure & Operational Efficiency (R&D, SG&A spend, cost reduction initiatives)\\n  4. Competitive Moat & Market Position (pricing power, market share, defensive posture)\\n  5. Positive Catalysts vs Profitability Risks (key tailwinds vs headwind factors)\\n\\n## Financial Metrics Spotlight Table\\n- Construct a clean Markdown table summarizing key financial indicators:\\n| Financial Indicator | Current Status / Estimate | Sentiment Impact |\\n| Revenue Growth Trend | [High Growth / Steady / Declining] | [Positive / Neutral / Negative] |\\n| Profit Margin Outlook | [Expanding / Stable / Contracting] | [Positive / Neutral / Negative] |\\n| Cost Structure Control | [Efficient / Moderate / High Overhead] | [Positive / Neutral / Negative] |\\n| Competitive Moat Strength | [Wide / Moderate / Narrow / None] | [Positive / Neutral / Negative] |\\n| Overall News Sentiment | [Bullish / Neutral / Bearish] | [Positive / Neutral / Negative] |\\n\\n## Investment Potential & Profitability Score\\n- Include an explicit score line on its own line:\\n**Profitability Score: X/10**\\n(where X is an integer or decimal score from 1 to 10 evaluating overall financial health and profitability outlook).\\n- Provide a clear investment thesis and risk-adjusted rationale supporting the assigned score.\"},{\"role\":\"user\",\"content\":\"Analyze ticker {{ $json.ticker }} with news context:\\n{{ $json.newsContext.replace(/\\\\/g, '\\\\\\\\').replace(/\\\"/g, '\\\\\\\"').replace(/\\n/g, '\\\\n') }}\"}]}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1050,
+        300
+      ],
+      "id": "financial-analyst-llm-node",
+      "name": "Financial Analyst LLM Node"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nlet reportText = item.choices?.[0]?.message?.content || item.message?.content || item.text || item.output || item.response || \"\";\n\nif (typeof reportText === 'object') {\n  reportText = JSON.stringify(reportText);\n}\n\nreturn [{\n  json: {\n    ticker: $(\"Normalize Ticker\").first().json.ticker || \"AAPL\",\n    report: reportText,\n    status: \"success\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1250,
+        300
+      ],
+      "id": "format-final-response-node",
+      "name": "Format Final Response"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Ticker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Ticker": {
+      "main": [
+        [
+          {
+            "node": "Fetch Google News RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Google News RSS": {
+      "main": [
+        [
+          {
+            "node": "News Data Aggregator & Cleaner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News Data Aggregator & Cleaner": {
+      "main": [
+        [
+          {
+            "node": "Financial Analyst LLM Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Analyst LLM Node": {
+      "main": [
+        [
+          {
+            "node": "Format Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -3,6 +3,7 @@ AI Trading & Auto-Hedging Intelligence Platform
 FastAPI Application Entry Point
 """
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -29,22 +30,36 @@ from app.core.database import close_db_pool, create_db_pool
 from app.core.logging import setup_logging
 
 setup_logging()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan: initialize and teardown resources."""
     # Startup
-    app.state.db_pool = await create_db_pool()
-    app.state.redis = await aioredis.from_url(
-        settings.redis_url,
-        encoding="utf-8",
-        decode_responses=True,
-    )
+    try:
+        app.state.db_pool = await create_db_pool()
+    except Exception as exc:
+        logger.warning("PostgreSQL DB pool connection skipped/failed: %s", exc)
+        app.state.db_pool = None
+
+    try:
+        app.state.redis = await aioredis.from_url(
+            settings.redis_url,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+    except Exception as exc:
+        logger.warning("Redis connection skipped/failed: %s", exc)
+        app.state.redis = None
+
     yield
+
     # Shutdown
-    await close_db_pool(app.state.db_pool)
-    await app.state.redis.aclose()
+    if getattr(app.state, "db_pool", None):
+        await close_db_pool(app.state.db_pool)
+    if getattr(app.state, "redis", None):
+        await app.state.redis.aclose()
 
 
 app = FastAPI(

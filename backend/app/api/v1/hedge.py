@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.auth import CurrentUser
 from app.brokers.paper import PaperBroker
 from app.core.database import get_db
-from app.core.security import get_current_user
 from app.domains.hedge.engine import run_hedge_cycle
-from app.domains.hedge.trigger import evaluate_hedge_triggers, classify_regime
+from app.domains.hedge.trigger import classify_regime, evaluate_hedge_triggers
 from app.domains.market_data.services import get_cached_quote
 
 router = APIRouter()
@@ -27,65 +27,63 @@ def _get_redis(request: Request) -> aioredis.Redis:
 @router.get("/status")
 async def get_hedge_status(
     request: Request,
-    current_user=Depends(get_current_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ):
     """Current hedge state — active hedge positions, last trigger, regime."""
     redis = _get_redis(request)
 
+    # 1. Fetch user portfolio
     port_q = await db.execute(text("""
-        SELECT id, cash_balance FROM portfolios
-        WHERE user_id = :uid AND is_active = true LIMIT 1
+        SELECT id FROM portfolios WHERE user_id = :uid AND is_active = true LIMIT 1
     """), {"uid": str(current_user.id)})
     port = port_q.fetchone()
-    if not port:
-        raise HTTPException(status_code=404, detail="No active portfolio")
 
-    # Active hedge positions
-    hedge_pos_q = await db.execute(text("""
-        SELECT symbol, quantity, avg_cost, COALESCE(current_price, avg_cost) AS price,
-               (COALESCE(current_price, avg_cost) - avg_cost) / avg_cost AS pnl_pct
-        FROM positions
-        WHERE portfolio_id = :pid AND is_hedge = true
-    """), {"pid": str(port.id)})
-    hedge_positions = [
-        {
-            "symbol": r.symbol,
-            "quantity": float(r.quantity),
-            "avg_cost": float(r.avg_cost),
-            "current_price": float(r.price),
-            "pnl_pct": round(float(r.pnl_pct or 0), 4),
-        }
-        for r in hedge_pos_q.fetchall()
-    ]
-
-    # Latest hedge event
-    last_q = await db.execute(text("""
-        SELECT trigger_type, trigger_value, portfolio_beta_before,
-               portfolio_beta_after, hedge_instrument, hedge_quantity,
-               hedge_cost, explanation, created_at
-        FROM hedge_events
-        WHERE portfolio_id = :pid
-        ORDER BY created_at DESC LIMIT 1
-    """), {"pid": str(port.id)})
-    last = last_q.fetchone()
-
-    # Current VIX + regime
-    vix_q = await get_cached_quote(redis, "VXX")
-    vix = float(vix_q["price"]) if vix_q else 18.0
+    # 2. Check active hedge positions in Redis / DB
+    vix_quote = await get_cached_quote(redis, "VXX")
+    vix = float(vix_quote["price"]) if vix_quote else 18.2
     regime = classify_regime(vix)
 
-    # Cached beta
-    beta_raw = await redis.get(f"portfolio:beta:{str(port.id)}")
-    current_beta = float(json.loads(beta_raw).get("beta", 1.0)) if beta_raw else 1.0
+    # 3. Check for recent hedge_events
+    last_event = None
+    if port:
+        evt_q = await db.execute(text("""
+            SELECT trigger_type, trigger_value, portfolio_beta_before,
+                   portfolio_beta_after, hedge_instrument, hedge_quantity,
+                   hedge_cost, explanation, created_at
+            FROM hedge_events
+            WHERE portfolio_id = :pid
+            ORDER BY created_at DESC LIMIT 1
+        """), {"pid": str(port.id)})
+        last_event = evt_q.fetchone()
+
+    # Check active hedge position in positions table
+    hedge_pos = None
+    if port:
+        pos_q = await db.execute(text("""
+            SELECT symbol, quantity, avg_cost, current_price
+            FROM positions
+            WHERE portfolio_id = :pid AND symbol IN ('SH', 'SDS', 'PSQ') AND quantity > 0
+        """), {"pid": str(port.id)})
+        hedge_pos = pos_q.fetchall()
+
+    is_hedged = bool(hedge_pos and len(hedge_pos) > 0)
+    last = last_event
 
     return {
-        "is_hedged":        len(hedge_positions) > 0,
-        "hedge_positions":  hedge_positions,
-        "current_beta":     round(current_beta, 4),
-        "vix":              round(vix, 2),
-        "regime":           regime.value,
-        "last_event": {
+        "is_hedged": is_hedged,
+        "regime": regime,
+        "vix_level": vix,
+        "active_hedge_positions": [
+            {
+                "symbol": r.symbol,
+                "quantity": float(r.quantity),
+                "avg_cost": float(r.avg_cost),
+                "current_price": float(r.current_price or r.avg_cost),
+            }
+            for r in (hedge_pos or [])
+        ],
+        "last_trigger_event": {
             "trigger_type":    last.trigger_type,
             "trigger_value":   float(last.trigger_value),
             "beta_before":     float(last.portfolio_beta_before or 0),
@@ -102,8 +100,8 @@ async def get_hedge_status(
 # ── GET /hedge/history ────────────────────────────────────────────────────────
 @router.get("/history")
 async def get_hedge_history(
+    current_user: CurrentUser,
     limit: int = 20,
-    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Paginated hedge event log."""
@@ -150,7 +148,7 @@ async def get_hedge_history(
 @router.post("/trigger")
 async def manual_trigger_hedge(
     request: Request,
-    current_user=Depends(get_current_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ):
     """Manually trigger a hedge analysis cycle (dry_run by default)."""
@@ -188,7 +186,7 @@ async def manual_trigger_hedge(
 @router.get("/analysis")
 async def get_hedge_analysis(
     request: Request,
-    current_user=Depends(get_current_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ):
     """Run a dry-run hedge analysis — see what WOULD happen without executing."""
